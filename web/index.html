@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+
 <head>
   <!--
     If you are serving your web app in a path other than the root, change the
@@ -14,7 +15,7 @@
     This is a placeholder for base href that will be replaced by the value of
     the `--base-href` argument provided to `flutter build`.
   -->
-  <base href="/">
+  <base href="/web/">
 
   <meta charset="UTF-8">
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
@@ -27,16 +28,18 @@
   <link rel="apple-touch-icon" href="icons/Icon-192.png">
 
   <!-- Favicon -->
-  <link rel="icon" type="image/png" href="favicon.png"/>
+  <link rel="icon" type="image/png" href="favicon.png" />
 
   <title>skypms_flutter</title>
   <link rel="manifest" href="manifest.json">
 
   <!-- ai : 구식 로더용 serviceWorkerVersion 변수와 flutter.js 로드 스크립트 삭제. Flutter 3.22+에서 deprecated된 방식이며 flutter_bootstrap.js가 엔진 로드를 대신함 (삭제) -->
 </head>
+
 <body>
   <!-- ai : 구식 로더(_flutter.loader.loadEntrypoint + serviceWorkerVersion)를 flutter_bootstrap.js 방식으로 변경. 기존 방식은 Flutter 3.47 빌드 시 deprecated 경고가 발생했고, flutter_bootstrap.js는 빌드 시 자동 생성되어 엔진(CanvasKit/skwasm) 선택·로드와 서비스워커 버전을 처리함 -->
   <script src="flutter_bootstrap.js" async></script>
   <!-- ai -->
 </body>
+
 </html>
