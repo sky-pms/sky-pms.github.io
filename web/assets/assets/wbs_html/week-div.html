@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<title>SKY-PMS WBS</title>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=Edge;chrome=IE8">
+	<!-- <meta name="viewport" content="width=device-width,initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no"> -->
+	<meta name="viewport" content="width=device-width,initial-scale=1.0,minimum-scale=1.0">
+	<link href="css/bootstrap.min.css" rel="stylesheet" type="text/css">
+	<link href="css/week-div.css" type="text/css" rel="stylesheet">
+
+	<link href="css/custom.css" type="text/css" rel="stylesheet">
+	<link rel="stylesheet" media="all and (orientation:landscape)" href="css/custom-land.css">
+
+	<script type="text/javascript" src="./js/sample_data.js"></script>
+	<script type="text/javascript" src="./js/jquery.min.js"></script>
+
+	<script type="text/javascript" src="./js/moment.min.js"></script>
+	<script type="text/javascript" src="./js/moment-range.js"></script>
+
+	<script type="text/javascript" src="./js/util_script.js"></script>
+	<script type="text/javascript" src="./js/handle_ui_2.js"></script>
+
+</head>
+
+<body>
+	<div class="btn-Box">
+		<div style="float: left;" class="land-show">
+			<div id="collapse-btn" onclick="clickCollapseBtn()" class="btn di">접기</div>
+		</div>
+		<div style="float: right;">
+			<div id="selectDailyViewBtn" onclick="selectDailyView()" class="btn di">일별</div>
+			<div id="selectWeekViewBtn" onclick="selectWeekView()" class="btn on">주별</div>
+		</div>
+	</div>
+
+	<div class="fn-gantt">
+		<div class="fn-content" style="overflow: scroll;">
+			<!-- 좌측 -->
+			<div class="leftPanel">
+				<div class="row spacer"></div>
+				<!-- 첫번째 div margin-top: 48px주세요 -->
+
+			</div>
+
+			<!-- 우측 -->
+			<div class="rightPanel">
+				<!-- dataPanel 가로/세로 길이는 24민큼 늘려주세요 -->
+				<div class="dataPanel" style="width:0px; height:0px;">
+
+					<div id="month-layout" class="row header">
+						<!-- 여기에 week, daily 추가 -->
+
+					</div>
+
+
+					<!-- bar-->
+					<div class="outline">
+						<!-- 분류1 -->
+						<!-- <div>
+							<div class="bar ganttRed" style="margin-left:0; width:96px">
+								<span class="fn-label">46% (2)</span>
+							</div>
+							<div class="bar ganttRed" style="margin-left:0; width:48px">
+								<span class="fn-label">박미일</span>
+							</div>
+							<div class="bar ganttRed" style="margin-left:24px; width:72px;">
+								<span class="fn-label">김성운dsfsdfsdf</span>
+							</div>
+						</div> -->
+
+
+
+
+						<!-- 오늘의 날짜는 좌측 값/높이 값만 설정해줌-->
+						<!-- <div class="line today" style="margin-left:24px;height:432px"></div> -->
+
+
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+
+
+	<script>
+
+		const dev_process = false;				// 개발 중에만 true
+		const dev_wbs_menu_type = 'project';    // project, user
+		const dev_view_type = 'week';           // week, daily
+
+		window['moment-range'].extendMoment(moment);    // moment range js 를 사용하기 위새 설정
+
+		// daily view
+		function selectDailyView() {
+			//console.log("selectDailyView", target);
+			if (g_wbsInfo == null) return;
+
+			g_view_type = 'daily';
+			startWBSView();
+
+			$('#selectDailyViewBtn').addClass("on").removeClass("di");
+			$('#selectWeekViewBtn').removeClass("on").addClass("di");
+
+			// 현재 view type 상태를 모바일에 전달하여 저장시킨다.
+			reqMobileInterface(
+				{
+					'type': 'set_view_type',
+					'view_type': 'daily'
+				}
+			);
+		}
+
+		// week view
+		function selectWeekView() {
+			//console.log("selectWeekView", target);
+			if (g_wbsInfo == null) return;
+
+			g_view_type = 'week';
+			startWBSView();
+
+			$('#selectWeekViewBtn').addClass("on").removeClass("di")
+			$('#selectDailyViewBtn').removeClass("on").addClass("di");
+
+			// 현재 view type 상태를 모바일에 전달하여 저장시킨다.
+			reqMobileInterface(
+				{
+					'type': 'set_view_type',
+					'view_type': 'week'
+				}
+			);
+		}
+
+		function clickCollapseBtn() {
+			reqMobileInterface({ 'type': 'collapse' });		// 가로 모드의 경우 검색 화면을 숨기와 web view 화면을 넓게 사용한다.
+		}
+
+
+		$(document).ready(function () {
+			console.log('loaded');
+
+			reqMobileInterface({ 'type': 'get_wbs_data' });    // html load 후 native 에 wbs data 달라고 요청	
+
+			// tests
+			if (dev_process) {
+				g_view_type = dev_view_type;
+				g_wbs_menu_type = dev_wbs_menu_type;
+				handleMobileEvent('wbs_menu_type', JSON.stringify({ 'wbs_menu_type': dev_wbs_menu_type }));
+				handleMobileEvent('view_type', JSON.stringify({ 'view_type': dev_view_type }));
+
+				if (dev_wbs_menu_type == 'project') {
+					handleMobileEvent('wbs_data', JSON.stringify(wbsInfo));                   // test - 모바일에서 wbs info 가져온것 처럼
+				} else {
+					handleMobileEvent('wbs_data_user', JSON.stringify(wbsInfo_user));         // test - 모바일에서 wbs info 가져온것 처럼
+				}
+			}
+
+		});
+
+
+		// mobile 에서 호출 - data 를 넘겨온다.
+		function handleMobileEvent(type, jsonString) {
+			// console.log('handleMobileEvent type :', type);
+			// console.log('handleMobileEvent jsonString :', jsonString);
+
+			try {
+				var jsonObj = JSON.parse(jsonString);
+				handleData(type, jsonObj);
+			} catch (e) {
+				console.log('error handleMobileEvent :', e);
+				console.log('json :', jsonString);
+				return;
+			}
+		}
+
+	</script>
+
+
+</body>
+
+</html>
